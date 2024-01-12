@@ -197,28 +197,9 @@ public class JpegReader(byte[] data, JPEGHeader header)
         return mcuArray;
     }
 
-    public byte[] EncodeHuffmanData(MCU[] mcuArray, int lengthInBytes, byte[] image)
+    public byte[] EncodeHuffmanData(MCU[] mcuArray)
     {
-        int i = 0;
-        byte[] messageBytes = new byte[lengthInBytes];
-        while(true)
-        {
-            foreach (var mcu in mcuArray)
-            {
-                for(int j = 0; i<3;j++)
-                {
-                    if(!(i<lengthInBytes)) break;
-                    messageBytes[i] = (byte)mcu[j][62];
-                    i++;
-                }
-                if(!(i<lengthInBytes)) break;
-            }
-            break;
-        }
-        
-        string message = Encoding.ASCII.GetString(messageBytes);
-
-        return Algorithms.EOF.EOFWriter.WritePastEOFMarker(image,message);
+        throw new NotImplementedException();
     }
 
     /// <summary>

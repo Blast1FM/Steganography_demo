@@ -32,6 +32,6 @@ public static class DCTWriter
             }
         }
 
-        return reader.EncodeHuffmanData(mcuArray,messageBytes.Length, image);
+        return reader.EncodeHuffmanData(mcuArray);
     }
 }
