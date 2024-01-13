@@ -4,7 +4,7 @@ namespace Steganography.Service.Algorithms.DCT;
 
 public static class DCTReader
 {
-    internal static string ReadMessageFromImage(byte[] image)
+    static string ReadMessageFromImage(byte[] image)
     {
         int messageIndex = 0;
         List<byte> messageBytes = new List<byte>();
