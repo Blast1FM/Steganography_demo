@@ -1,10 +1,11 @@
-﻿using Steganography.Service.Utils.JPEG;
+﻿using System.Text;
+using Steganography.Service.Utils.JPEG;
 
-namespace Steganography.Service.Algorithms.DCT;
+namespace Steganography.Service.Algorithms;
 
 public static class DCTReader
 {
-    static string ReadMessageFromImage(byte[] image)
+    internal static string ReadMessageFromImage(byte[] image)
     {
         int messageIndex = 0;
         List<byte> messageBytes = new List<byte>();
@@ -20,15 +21,15 @@ public static class DCTReader
         huffmanStream = null;
         GC.Collect();
         var mcuArray = reader.DecodeHuffmanData(huffmanStreamNoMarkers);
-        foreach (var mcu in mcuArray)
+        Parallel.ForEach(mcuArray,mcu=>
         {
             for(int i = 0; i<3; i++)
             {
                 messageBytes.Add((byte)mcu[i][62]);
                 messageIndex++;
             }
-        }
+        });
 
-        return reader.GetMessageFromMCUs();
+        return Encoding.ASCII.GetString(messageBytes.ToArray());
     }
 }
