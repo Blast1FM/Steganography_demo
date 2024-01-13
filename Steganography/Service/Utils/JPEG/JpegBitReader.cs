@@ -36,7 +36,6 @@ public class JpegBitReader
 
     internal byte GetNextSymbol(HuffmanTable table)
     {
-        // TODO HANDLE CASE WHERE YOU COULDN'T READ A BIT, SINCE THAT WILL HAPPEN AT THE END OF THE STREAM
         uint code = 0;
         for(int i = 0; i<16; i++)
         {
