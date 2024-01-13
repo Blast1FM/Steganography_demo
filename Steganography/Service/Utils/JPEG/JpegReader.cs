@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.VisualBasic;
 using static Steganography.Service.Utils.JPEG.JPEGHelper;
 
+
 namespace Steganography.Service.Utils.JPEG;
 
 public class JpegReader(byte[] data, JPEGHeader header)
@@ -52,6 +53,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
     public List<byte> ReadStartOfScan()
     {
         return new List<byte>(1);
+        #pragma warning disable CS0162
         var SOS = FindJPEGMarker(JpegMarker.StartOfScan);
         if(SOS.Item1 == null) throw new Exception("Invalid JPEG: Start of scan marker not found");
         int scanSectionLength = GetSectionLength((int)SOS.Item1);
