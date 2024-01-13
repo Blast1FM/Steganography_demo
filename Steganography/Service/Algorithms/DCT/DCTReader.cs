@@ -21,14 +21,14 @@ public static class DCTReader
         huffmanStream = null;
         GC.Collect();
         var mcuArray = reader.DecodeHuffmanData(huffmanStreamNoMarkers);
-        foreach (var mcu in mcuArray)
+        Parallel.ForEach(mcuArray,mcu=>
         {
             for(int i = 0; i<3; i++)
             {
                 messageBytes.Add((byte)mcu[i][62]);
                 messageIndex++;
             }
-        }
+        });
 
         return Encoding.ASCII.GetString(messageBytes.ToArray());
     }
