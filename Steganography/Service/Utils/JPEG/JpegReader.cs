@@ -8,6 +8,7 @@ namespace Steganography.Service.Utils.JPEG;
 public class JpegReader(byte[] data, JPEGHeader header)
 {
     readonly byte[] _data = data;
+    public byte[] Data{get=>_data;}
     JPEGHeader _header = header;
     List<int> _supportedComponentCount = [1,3];
     /// <summary>
@@ -291,7 +292,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
             var table = new HuffmanTable(lowerNibble);
 
             ++currentIndex;
-
+            System.Console.WriteLine($"Processing huffman table with id {lowerNibble}");
             // TODO Read and set data
             
             int symbolCount = 0;
@@ -310,8 +311,8 @@ public class JpegReader(byte[] data, JPEGHeader header)
                 currentIndex++;
             }
 
-            // TODO fix
-            if(symbolCount>162) throw new Exception($"Too many symbols in Huffman table with id {lowerNibble}");
+            // TODO fix, read above, dickhead
+            if(symbolCount>162) throw new Exception($"Too many symbols in Huffman table with id {lowerNibble}; Got {symbolCount}");
 
             // Read actual huffman symbols and populate huffman table's symbol array
             for (int i = 0; i < symbolCount; i++)
@@ -389,8 +390,12 @@ public class JpegReader(byte[] data, JPEGHeader header)
             byte quantizationTableID = _data[currentIndex];
             currentIndex+=1;
             _header._colorComponents[i] = new(i+1,quantizationTableID);
-            if(sofDataLength - 5 - (3*_header._componentCount)!=0) throw new Exception($"SOF Section length did not match with actual section length; Section length expected {sofDataLength}, actual diff: {sofDataLength - 5 - (3*_header._componentCount)}");
+            // TODO -5 was there before
+            if(sofDataLength - 6 - (3*_header._componentCount)!=0) throw new Exception($"SOF Section length did not match with actual section length; Section length expected {sofDataLength}, actual diff: {sofDataLength - 5 - (3*_header._componentCount)}");
         }
+
+        System.Console.WriteLine($"Width: {_header._width}, Height: {_header._height}");
+        System.Console.WriteLine($"Component count: {_header._componentCount}");
 
     }
     /// <summary>
