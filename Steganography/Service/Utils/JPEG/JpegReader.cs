@@ -387,10 +387,9 @@ public class JpegReader(byte[] data, JPEGHeader header)
             if(horizontalSamplingFactor != 1 || verticalSamplingFactor!=1) throw new Exception("Unsupported sampling factor, must be 1");
             currentIndex+=1;
             byte quantizationTableID = _data[currentIndex];
-            _header._colorComponents[i] = new(i+1,quantizationTableID);
-            // TODO fix, always triggers
-            if(sofDataLength - 5 - (3*_header._componentCount)!=0) throw new Exception("SOF Section length did not match with actual section length");
             currentIndex+=1;
+            _header._colorComponents[i] = new(i+1,quantizationTableID);
+            if(sofDataLength - 5 - (3*_header._componentCount)!=0) throw new Exception($"SOF Section length did not match with actual section length; Section length expected {sofDataLength}, actual diff: {sofDataLength - 5 - (3*_header._componentCount)}");
         }
 
     }
