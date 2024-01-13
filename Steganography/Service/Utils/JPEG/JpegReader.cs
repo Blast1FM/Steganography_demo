@@ -203,7 +203,9 @@ public class JpegReader(byte[] data, JPEGHeader header)
 
     public string GetMessageFromMCUs()
     {
+#pragma warning disable CS8603 // Possible null reference return.
         return Algorithms.EOF.EOFReader.ReadPastEOFMarker(_data);
+#pragma warning restore CS8603 // Possible null reference return.
     }
 
     public byte[] EncodeHuffmanData(byte[] messageBytes)
