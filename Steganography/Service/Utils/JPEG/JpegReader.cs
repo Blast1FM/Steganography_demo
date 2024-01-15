@@ -10,6 +10,7 @@ namespace Steganography.Service.Utils.JPEG;
 public class JpegReader(byte[] data, JPEGHeader header)
 {
     readonly byte[] _data = data;
+    public byte[] Data{get=>_data;}
     JPEGHeader _header = header;
     List<int> _supportedComponentCount = [1,3];
     /// <summary>
@@ -61,7 +62,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
         // Post ++ to avoid currentIndex+=1 after.
         int numberOfComponents = _data[currentIndex++];
 
-        // TODO use this, maybe make a hash map or something
+        //  use this, maybe make a hash map or something
         // Relation between colour components and Huffman table IDs used for each component with 
         // The ID you read
         // DONE, NO HASH MAPS
@@ -82,7 +83,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
         int successiveApproximation = _data[currentIndex++];
         if(successiveApproximation != 0) throw new Exception("Successive approximation byte is not equal to 0");
 
-        // TODO Ideally write out read data for troubleshooting purposes
+        //  Ideally write out read data for troubleshooting purposes
         if(currentIndex-scanSectionLength != (int)SOS.Item1+4) throw new Exception("Start of scan length mismatch");
 
         // Finished reading Start of Scan section, begin reading huffman coded bitstream located past this
@@ -94,7 +95,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
 
         List<byte> huffmanCodedData = new(huffmanCodedDataArray);
 
-        // TODO note if things go wrong.
+        //  note if things go wrong.
         // Now that i think of it, i should just read here and remove markers by appending
         // to the list if a marker is encountered so i don't read the data a total of 3 times
         huffmanCodedDataArray = null;
@@ -129,7 +130,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
 
             if(previous == (byte)JpegMarker.Padding)
             {
-                // TODO Sit down and think through the logic once again if things go wrong.
+                //  Sit down and think through the logic once again if things go wrong.
                 switch(current)
                     {
                         case (byte)JpegMarker.EndOfImage:
@@ -192,7 +193,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
             }
             for (int j = 0; j<_header._componentCount;j++)
             {
-                // TODO this is headache inducing
+                //  this is headache inducing
                 if(!decodeMCUComponent(bitReader, mcuArray[i][j], ref previousDCCoefficients[j], _header._colorComponents[j].HuffmanDCTable, _header._colorComponents[i].HuffmanACTable))
                 {
                     throw new Exception("Failed to decode MCU Component");
@@ -203,16 +204,10 @@ public class JpegReader(byte[] data, JPEGHeader header)
         return mcuArray;
     }
 
-    public string GetMessageFromMCUs()
-    {
-#pragma warning disable CS8603 // Possible null reference return.
-        return Algorithms.EOF.EOFReader.ReadPastEOFMarker(_data);
-#pragma warning restore CS8603 // Possible null reference return.
-    }
 
-    public byte[] EncodeHuffmanData(byte[] messageBytes)
+    public byte[] EncodeHuffmanData(MCU[] mcuArray)
     {
-        return Algorithms.EOF.EOFWriter.WritePastEOFMarker(_data,Encoding.ASCII.GetString(messageBytes));
+        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -228,12 +223,12 @@ public class JpegReader(byte[] data, JPEGHeader header)
     {
         // Decode DC Coefficient
         byte DCCoefficientLength = reader.GetNextSymbol(DCTable);
-        // TODO ERror checking for inability to read symbol
+        //  ERror checking for inability to read symbol
 
         if(DCCoefficientLength > 11) return false;
 
         int coefficient = reader.ReadBits(DCCoefficientLength);
-        // TODO possible error if coeff is invalid
+        //  possible error if coeff is invalid
 
         if(DCCoefficientLength!=0 && coefficient< (1<<(DCCoefficientLength-1) ))
         {
@@ -247,7 +242,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
         for (int i = 1; i < 64; i++)
         {
             var symbol = reader.GetNextSymbol(ACTable);
-            // TODO Error checking
+            //  Error checking
 
             if(symbol == 0x00)
             {
@@ -274,7 +269,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
             if(coeffLength!=0)
             {
                 coefficient = reader.ReadBits(coeffLength);
-                //TODO error checking here if read bits fails
+                // error checking here if read bits fails
                 
                 if(coefficient<(1<<(coeffLength-1)))
                 {
@@ -288,7 +283,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
 
     /// <summary>
     /// Tries to read huffman tables and populate related JPEG header fields
-    /// TODO METHOD TO DISPLAY TABLES FOR TESTING
+    ///  METHOD TO DISPLAY TABLES FOR TESTING
     /// </summary>
     /// <exception cref="Exception"></exception>
     public void ReadHuffmanTables()
@@ -304,8 +299,8 @@ public class JpegReader(byte[] data, JPEGHeader header)
             var table = new HuffmanTable(lowerNibble);
 
             ++currentIndex;
-
-            // TODO Read and set data
+            System.Console.WriteLine($"Processing huffman table with id {lowerNibble}");
+            //  Read and set data
             
             int symbolCount = 0;
             table._offsets[0] = (uint)symbolCount;
@@ -313,7 +308,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
             // Populate offsets array. Offset array is used to calculate the amount of huffman codes of given length
             // Where index of offset array is the huffman code length, and the value at that index
             // Is the total count of huffman codes before (and including? Double check, im bad with data structures)
-            // TODO MAKE SURE YOU ACCOUNT FOR THE LAST ELEMENT IN THE OFFSET ARRAY, IT HAS TO BE A DUMMY ONE SO WE CAN GET
+            //  MAKE SURE YOU ACCOUNT FOR THE LAST ELEMENT IN THE OFFSET ARRAY, IT HAS TO BE A DUMMY ONE SO WE CAN GET
             // THE CORRECT COUNT FOR 16 BIT LONG HUFFMAN CODES
             // I fucking smell an error here with the indexes
             for(int i = 1; i<=16; i++)
@@ -322,10 +317,10 @@ public class JpegReader(byte[] data, JPEGHeader header)
                 table._offsets[i] = (uint)symbolCount;
                 currentIndex++;
             }
+          
+            //  TODO fix, read above, dickhead
+            if(symbolCount>162) throw new Exception($"Too many symbols in Huffman table with id {lowerNibble}; Got {symbolCount}");
 
-            // TODO fix
-            return;
-            if(symbolCount>162) throw new Exception($"Too many symbols in Huffman table with id {lowerNibble}");
 
             // Read actual huffman symbols and populate huffman table's symbol array
             for (int i = 0; i < symbolCount; i++)
@@ -341,7 +336,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
             {
                 _header._huffmanDCTables[lowerNibble] = table;
             }
-            // TODO Decrease by actual number of bytes read, not by 1
+            //  Decrease by actual number of bytes read, not by 1
             // This should be correct
             DHTDataLength -= 17+symbolCount;
         }
@@ -360,7 +355,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
         if(length!=4) throw new Exception($"Invalid DRI section length, expected: 4, found: {length}");
         index+=2;
         int restartInterval = BinaryPrimitives.ReverseEndianness(BitConverter.ToUInt16(_data,(int)index));
-        // TODO error checking, in case there is a max restart interval.
+        //  error checking, in case there is a max restart interval.
         _header._restartInterval = restartInterval;
     }
     /// <summary>
@@ -377,7 +372,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
         int currentIndex = (int)SOF.Item1+4;
         int sofDataLength = GetSectionLength((int)SOF.Item1);
         // Note everything in jpeg is big endian, apparently
-        // TODO TODO TODO ACTUALLY ACCOUNT FOR MACHINE ENDIANESS LMAO, THIS WORKS ON LITTLE ENDIAN MACHINES
+        //    ACTUALLY ACCOUNT FOR MACHINE ENDIANESS LMAO, THIS WORKS ON LITTLE ENDIAN MACHINES
         // Checked with BitConverter.IsLittleEndian
         if(!(_data[currentIndex]== 8)) throw new Exception("Invalid JPEG: Precision must be 8");
 
@@ -404,11 +399,14 @@ public class JpegReader(byte[] data, JPEGHeader header)
             if(horizontalSamplingFactor != 1 || verticalSamplingFactor!=1) throw new Exception("Unsupported sampling factor, must be 1");
             currentIndex+=1;
             byte quantizationTableID = _data[currentIndex];
-            _header._colorComponents[i] = new(i+1,quantizationTableID);
-            // TODO fix, always triggers
-            if(sofDataLength - 5 - (3*_header._componentCount)!=0) throw new Exception("SOF Section length did not match with actual section length");
             currentIndex+=1;
+            _header._colorComponents[i] = new(i+1,quantizationTableID);
+            //  -5 was there before
+            if(sofDataLength - 6 - (3*_header._componentCount)!=0) throw new Exception($"SOF Section length did not match with actual section length; Section length expected {sofDataLength}, actual diff: {sofDataLength - 5 - (3*_header._componentCount)}");
         }
+
+        System.Console.WriteLine($"Width: {_header._width}, Height: {_header._height}");
+        System.Console.WriteLine($"Component count: {_header._componentCount}");
 
     }
     /// <summary>

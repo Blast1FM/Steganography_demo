@@ -21,6 +21,7 @@ public static class DCTReader
         huffmanStream = null;
         GC.Collect();
         var mcuArray = reader.DecodeHuffmanData(huffmanStreamNoMarkers);
+      
         foreach(var mcu in mcuArray)
         {
             for(int i = 0; i<3; i++)
@@ -29,7 +30,6 @@ public static class DCTReader
                 messageIndex++;
             }
         };
-
-        return reader.GetMessageFromMCUs();
+        return Encoding.ASCII.GetString(messageBytes);
     }
 }
