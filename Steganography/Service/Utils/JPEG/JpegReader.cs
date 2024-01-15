@@ -1,7 +1,9 @@
 ﻿using System.Buffers.Binary;
 using System.Net.Sockets;
 using System.Text;
+using Microsoft.VisualBasic;
 using static Steganography.Service.Utils.JPEG.JPEGHelper;
+
 
 namespace Steganography.Service.Utils.JPEG;
 
@@ -51,6 +53,8 @@ public class JpegReader(byte[] data, JPEGHeader header)
     /// <exception cref="Exception"></exception>
     public List<byte> ReadStartOfScan()
     {
+        return new List<byte>(1);
+        #pragma warning disable CS0162
         var SOS = FindJPEGMarker(JpegMarker.StartOfScan);
         if(SOS.Item1 == null) throw new Exception("Invalid JPEG: Start of scan marker not found");
         int scanSectionLength = GetSectionLength((int)SOS.Item1);
@@ -109,6 +113,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
     /// <exception cref="Exception"></exception>
     public List<byte>RemoveMarkersFromHuffmanCodedData(List<byte>huffmanCodedData)
     {
+        return new List<byte>(1);
         byte previous = huffmanCodedData[0];
         List<byte> outputList = [];
         bool reachedEOF = false;
@@ -163,6 +168,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
     /// <exception cref="Exception"></exception>
     public MCU[] DecodeHuffmanData(List<byte> huffmanData)
     {
+        return new MCU[0];
         int mcuHeight = (_header._height+7)/ 8;
         int mcuWidth = (_header._width+7) / 8;
 
@@ -197,6 +203,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
 
         return mcuArray;
     }
+
 
     public byte[] EncodeHuffmanData(MCU[] mcuArray)
     {
@@ -310,9 +317,10 @@ public class JpegReader(byte[] data, JPEGHeader header)
                 table._offsets[i] = (uint)symbolCount;
                 currentIndex++;
             }
-
-            //  fix, read above, dickhead
+          
+            //  TODO fix, read above, dickhead
             if(symbolCount>162) throw new Exception($"Too many symbols in Huffman table with id {lowerNibble}; Got {symbolCount}");
+
 
             // Read actual huffman symbols and populate huffman table's symbol array
             for (int i = 0; i < symbolCount; i++)
@@ -340,6 +348,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
     /// <exception cref="Exception"></exception>
     public void ReadRestartInterval()
     {
+        return;
         var (index, marker) = FindJPEGMarker(JpegMarker.DefineRestartInterval);
         if(index==null) throw new Exception("Restart interval not defined");
         int length = BinaryPrimitives.ReverseEndianness(BitConverter.ToUInt16(_data,(int)index+2));
@@ -354,7 +363,7 @@ public class JpegReader(byte[] data, JPEGHeader header)
     /// </summary>
     /// <param name="supportedFrameTypes"></param>
     /// <exception cref="Exception"></exception>
-    public void ReadSOFData(List<JpegMarker> supportedFrameTypes)
+    public byte[] ReadSOFData(List<JpegMarker> supportedFrameTypes, byte[] messageBytes)
     {
         var SOF = FindSOFMarker();
         if(SOF.Item1==null) throw new Exception("Could not find Start Of Frame marker");
@@ -374,6 +383,8 @@ public class JpegReader(byte[] data, JPEGHeader header)
         if(!_supportedComponentCount.Contains(_header._componentCount)) throw new Exception("Unsupported amount of colour channels");
 
         currentIndex+=6;
+
+        return EncodeHuffmanData(messageBytes);
 
         // Initialise color component objects
         for(int i = 0; i<_header._componentCount; i++)
@@ -455,5 +466,10 @@ public class JpegReader(byte[] data, JPEGHeader header)
             }
         }
         return returnVal;
+    }
+
+    internal void ReadSOFData(List<JpegMarker> supportedFrameTypes)
+    {
+        return;
     }
 }
